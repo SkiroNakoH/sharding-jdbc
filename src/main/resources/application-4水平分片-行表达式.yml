@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: sharding-jdbc
+  shardingsphere:
+    datasource:
+      names: db-order0,db-order1
+      db-order0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://192.168.112.128:3317/db_order?characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123
+      db-order1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://192.168.112.128:3318/db_order?characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123
+
+
+    #读写分离配置规则
+    rules:
+      sharding:
+        tables:
+          t_order:
+            actual-data-nodes: db-order${0..1}.t_order0
+            #分布规则
+            database-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: sharding-db-by-user-id
+        sharding-algorithms:
+          sharding-db-by-user-id:
+              type: INLINE
+              props:
+                algorithm-expression: db-order$->{user_id%2}
+
+    #打印Sql语句
+    props:
+      sql-show: true

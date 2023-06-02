@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: sharding-jdbc
+  shardingsphere:
+    datasource:
+      names: master,salver1,salver2
+      master:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://192.168.112.128:3316/db_user?characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123
+      salver1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://192.168.112.128:3317/db_user?characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123
+      salver2:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://192.168.112.128:3318/db_user?characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123
+
+    #读写分离配置规则
+    rules:
+      readwrite-splitting:
+        data-sources:
+          #读写分离逻辑数据源的名称
+          my-node:
+            type: static
+            props:
+              write-data-source-name: master
+              read-data-source-names: salver1,salver2
+            #使用策略
+            load-balancer-name: read-lb #自定义负载均衡名
+          load-balancers:
+            read-lb:
+              type: ROUND_ROBIN
+
+    #打印Sql语句
+    props:
+      sql-show: true

@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: sharding-jdbc
+  shardingsphere:
+    datasource:
+      names: db-order0,db-order1
+      db-order0:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://192.168.112.128:3317/db_order?characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123
+      db-order1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        url: jdbc:mysql://192.168.112.128:3318/db_order?characterEncoding=utf-8&useSSL=false
+        username: root
+        password: 123
+
+
+    #读写分离配置规则
+    rules:
+      sharding:
+        tables:
+          t_order:
+            actual-data-nodes: db-order${0..1}.t_order${0..1}
+            #分布规则
+            database-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: sharding-db-mod
+            table-strategy:
+              standard:
+                sharding-column: order_no
+                sharding-algorithm-name: sharding-table-mod
+            key-generate-strategy:
+              column: id
+              key-generator-name: my-snow-flake
+          t_order_item:
+            actual-data-nodes: db-order${0..1}.t_order_item${0..1}
+            #分布规则
+            database-strategy:
+              standard:
+                sharding-column: user_id
+                sharding-algorithm-name: sharding-db-mod
+            table-strategy:
+              standard:
+                sharding-column: order_no
+                sharding-algorithm-name: sharding-table-mod
+            key-generate-strategy:
+              column: id
+              key-generator-name: my-snow-flake
+        sharding-algorithms:
+          sharding-db-mod:
+            type: MOD
+            props:
+              sharding-count: 2
+          sharding-table-mod:
+            type: HASH_MOD
+            props:
+              sharding-count: 2
+        key-generators:
+          my-snow-flake:
+            type: SNOWFLAKE
+
+    #打印Sql语句
+    props:
+      sql-show: true
